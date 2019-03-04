@@ -3889,6 +3889,12 @@ the corresponding TCP socket.
 If \fIhost\fP is a valid hostname or Internet address, and \fIport\fP
 is an integer port number or service name, \fBbash\fP attempts to open
 the corresponding UDP socket.
+.TP
+.B /dev/tipc/\fItype\fP/\fIlow\fP[/\fIhigh\fP]
+if \fItype\fP is a valid TIPC instance integer value, and \fIlow\fP
+is an integer type number, Bash attempts to open the corresponding
+TIPC RDM socket. If \fIhigh\fP is provided, the socket will be
+in multicast mode.
 .PD
 .RE
 .PP

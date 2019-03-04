@@ -717,6 +717,8 @@ AC_CHECK_HEADERS(sys/pte.h sys/stream.h sys/select.h sys/file.h sys/ioctl.h \
 		 sys/time.h sys/times.h sys/types.h sys/wait.h)
 AC_CHECK_HEADERS(netinet/in.h arpa/inet.h)
 
+AC_CHECK_HEADER(linux/tipc.h, AC_DEFINE(HAVE_TIPC))
+
 dnl sys/ptem.h requires definitions from sys/stream.h on systems where it
 dnl exists
 AC_CHECK_HEADER(sys/ptem.h, , ,[[

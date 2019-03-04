@@ -31,6 +31,10 @@
 #  include <unistd.h>
 #endif
 
+#if defined (HAVE_TIPC)
+#  include <linux/tipc.h>
+#endif
+
 #include <stdio.h> 
 #include <sys/types.h>
 
@@ -314,6 +318,86 @@ netopen (path)
   return fd;
 }
 
+#if defined (HAVE_TIPC)
+static int
+_netopen_tipc(uint8_t addrtype, uint32_t addr1, uint32_t addr2, uint32_t addr3)
+{
+	int fd, e;
+	struct sockaddr_tipc sa = {
+			.family = AF_TIPC,
+			.addrtype = addrtype
+	};
+
+	switch (addrtype) {
+	case TIPC_ADDR_ID:
+			sa.addr.id.node = addr1;
+			sa.addr.id.ref = addr2;
+	break;
+		case TIPC_ADDR_NAME:
+		sa.addrtype = TIPC_ADDR_NAME;
+		sa.addr.name.name.type = addr1;
+		sa.addr.name.name.instance = addr2;
+	break;
+		case TIPC_ADDR_NAMESEQ:
+		sa.addrtype = TIPC_ADDR_NAMESEQ;
+		sa.addr.nameseq.type = addr1;
+		sa.addr.nameseq.lower = addr2;
+		sa.addr.nameseq.upper = addr3;
+	break;
+	default:
+		goto err;
+	}
+
+	if ((fd = socket(AF_TIPC, SOCK_RDM, 0)) < 0) {
+		e = errno;
+		sys_error("socket");
+		goto err;
+	}
+	if (addrtype != TIPC_ADDR_ID &&
+		bind(fd, (struct sockaddr*)&sa, sizeof(sa))) {
+		e = errno;
+		sys_error("bind");
+		goto err;
+	}
+	if (connect(fd, (struct sockaddr*)&sa, sizeof(sa))) {
+		e = errno;
+		sys_error("connect");
+		goto err;
+	}
+	return fd;
+err:
+	if (fd > 0)
+		close(fd);
+	errno = e;
+
+	return -1;
+}
+int
+netopen_tipc (char *path)
+{
+	uint32_t  addr1, addr2, addr3;
+	uint8_t addrtype = TIPC_ADDR_NAME;
+	uint8_t dummy = 0;
+
+	if ((sscanf(path + 10, "%u:%u%c", &addr1, &addr2, &dummy) == 2) &&
+		!dummy)	{
+		addrtype = TIPC_ADDR_ID;
+	} else
+	if ((sscanf(path+10, "%u/%u/%u%c", &addr1, &addr2, &addr3, &dummy) == 3) &&
+		!dummy)	{
+		addrtype = TIPC_ADDR_NAMESEQ;
+	} else
+	if ((sscanf(path+10, "%u/%u%c", &addr1, &addr2, &dummy) == 2) &&
+		!dummy)	{
+		addrtype = TIPC_ADDR_NAME;
+	} else {
+		errno = EINVAL;
+		return -1;
+	}
+	return _netopen_tipc(addrtype, addr1, addr2, addr3);
+}
+#endif /* HAVE_TIPC */
+
 #if 0
 /*
  * Open a TCP connection to host `host' on the port defined for service
@@ -346,6 +430,15 @@ netopen (path)
 {
   internal_error (_("network operations not supported"));
   return -1;
+}
+
+
+int
+netopen_tipc (path)
+     char *path;
+{
+	internal_error(_("network operations not supported"));
+	return -1;
 }
 
 #endif /* !HAVE_NETWORK */

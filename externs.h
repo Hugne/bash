@@ -276,7 +276,7 @@ extern int isnetconn __P((int));
 
 /* declarations for functions defined in lib/sh/netopen.c */
 extern int netopen __P((char *));
-
+extern int netopen_tipc __P((char *));
 /* Declarations for  functions defined in lib/sh/oslib.c */
 
 #if !defined (HAVE_DUP2) || defined (DUP2_BROKEN)

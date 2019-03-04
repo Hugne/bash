@@ -520,6 +520,7 @@ here_document_to_fd (redirectee, ri)
 #define RF_DEVSTDOUT	4
 #define RF_DEVTCP	5
 #define RF_DEVUDP	6
+#define RF_DEVTIPC	7
 
 /* A list of pattern/value pairs for filenames that the redirection
    code handles specially. */
@@ -535,6 +536,9 @@ static STRING_INT_ALIST _redir_special_filenames[] = {
 #if defined (NETWORK_REDIRECTIONS)
   { "/dev/tcp/*/*", RF_DEVTCP },
   { "/dev/udp/*/*", RF_DEVUDP },
+#if defined (HAVE_TIPC)
+  { "/dev/tipc/*", RF_DEVTIPC },
+#endif
 #endif
   { (char *)NULL, -1 }
 };
@@ -592,6 +596,19 @@ redir_special_open (spec, filename, flags, mode, ri)
       fd = open (filename, flags, mode);
 #endif
       break;
+#if defined (HAVE_TIPC)
+    case RF_DEVTIPC:
+#if defined (RESTRICTED_SHELL)
+      if (restricted)
+	return (RESTRICTED_REDIRECT);
+#endif
+#if defined (HAVE_NETWORK)
+      fd = netopen_tipc(filename);
+#else
+      internal_warning(_("/dev/tipc/type/instance not supported without networking"));
+#endif /* HAVE_NETWORK */
+      break;
+#endif /* HAVE_TIPC */
 #endif /* NETWORK_REDIRECTIONS */
     }
 

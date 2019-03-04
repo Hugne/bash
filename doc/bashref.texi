@@ -2736,6 +2736,12 @@ the corresponding TCP socket.
 If @var{host} is a valid hostname or Internet address, and @var{port}
 is an integer port number or service name, Bash attempts to open 
 the corresponding UDP socket.
+
+@item /dev/tipc/@var{type}/@var{low}[/@var{high}]
+if @var{type} is a valid TIPC instance integer value, and @var{low}
+is an integer type number, Bash attempts to open the corresponding
+TIPC RDM socket. If @var{high} is provided, the socket will be
+in multicast mode.
 @end table
 
 A failure to open or create a file causes the redirection to fail.
@@ -8632,8 +8638,9 @@ system provides the necessary support.
 
 @item --enable-net-redirections
 This enables the special handling of filenames of the form
-@code{/dev/tcp/@var{host}/@var{port}} and
-@code{/dev/udp/@var{host}/@var{port}}
+@code{/dev/tcp/@var{host}/@var{port}},
+@code{/dev/udp/@var{host}/@var{port}} and
+@code{/dev/tipc/@var{type}/@var{low}[/@var{high}]}
 when used in redirections (@pxref{Redirections}).
 
 @item --enable-process-substitution
