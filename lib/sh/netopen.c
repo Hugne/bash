@@ -322,11 +322,10 @@ netopen (path)
 #if defined (HAVE_TIPC)
 static int
 _netopen_tipc(uint8_t addrtype, uint32_t addr1, uint32_t addr2,
-	      uint32_t addr3, enum r_instruction ri)
+	      uint32_t addr3, uint8_t do_bind, uint8_t do_connect)
 {
 	int fd, e;
-	uint8_t do_bind = (ri == r_input_direction || ri == r_input_output);
-	uint8_t do_connect = (ri == r_output_direction || ri == r_input_output);
+
 	struct sockaddr_tipc sa = {
 			.family = AF_TIPC,
 			.addrtype = addrtype
@@ -356,12 +355,14 @@ _netopen_tipc(uint8_t addrtype, uint32_t addr1, uint32_t addr2,
 		sys_error("socket");
 		goto err;
 	}
+	/*Bind the sockaddr if we have input redirection*/
 	if (addrtype != TIPC_ADDR_ID && do_bind &&
 		bind(fd, (struct sockaddr*)&sa, sizeof(sa))) {
 		e = errno;
 		sys_error("bind");
 		goto err;
 	}
+	/*Connect the sockaddr if we have output redirection*/
 	if (do_connect && connect(fd, (struct sockaddr*)&sa, sizeof(sa))) {
 		e = errno;
 		sys_error("connect");
@@ -381,6 +382,8 @@ netopen_tipc (char *path, enum r_instruction ri)
 	uint32_t  addr1, addr2, addr3;
 	uint8_t addrtype = TIPC_ADDR_NAME;
 	uint8_t dummy = 0;
+	uint8_t do_bind = (ri == r_input_direction || ri == r_input_output);
+	uint8_t do_connect = (ri == r_output_direction || ri == r_input_output);
 
 	if ((sscanf(path + 10, "%u:%u%c", &addr1, &addr2, &dummy) == 2) &&
 		!dummy)	{
@@ -397,7 +400,7 @@ netopen_tipc (char *path, enum r_instruction ri)
 		errno = EINVAL;
 		return -1;
 	}
-	return _netopen_tipc(addrtype, addr1, addr2, addr3, ri);
+	return _netopen_tipc(addrtype, addr1, addr2, addr3, do_bind, do_connect);
 }
 #endif /* HAVE_TIPC */
 
