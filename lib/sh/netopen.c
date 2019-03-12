@@ -33,6 +33,7 @@
 
 #if defined (HAVE_TIPC)
 #  include <linux/tipc.h>
+#  include "command.h"
 #endif
 
 #include <stdio.h> 
@@ -320,9 +321,12 @@ netopen (path)
 
 #if defined (HAVE_TIPC)
 static int
-_netopen_tipc(uint8_t addrtype, uint32_t addr1, uint32_t addr2, uint32_t addr3)
+_netopen_tipc(uint8_t addrtype, uint32_t addr1, uint32_t addr2,
+	      uint32_t addr3, enum r_instruction ri)
 {
 	int fd, e;
+	uint8_t do_bind = (ri == r_input_direction || ri == r_input_output);
+	uint8_t do_connect = (ri == r_output_direction || ri == r_input_output);
 	struct sockaddr_tipc sa = {
 			.family = AF_TIPC,
 			.addrtype = addrtype
@@ -347,19 +351,18 @@ _netopen_tipc(uint8_t addrtype, uint32_t addr1, uint32_t addr2, uint32_t addr3)
 	default:
 		goto err;
 	}
-
 	if ((fd = socket(AF_TIPC, SOCK_RDM, 0)) < 0) {
 		e = errno;
 		sys_error("socket");
 		goto err;
 	}
-	if (addrtype != TIPC_ADDR_ID &&
+	if (addrtype != TIPC_ADDR_ID && do_bind &&
 		bind(fd, (struct sockaddr*)&sa, sizeof(sa))) {
 		e = errno;
 		sys_error("bind");
 		goto err;
 	}
-	if (connect(fd, (struct sockaddr*)&sa, sizeof(sa))) {
+	if (do_connect && connect(fd, (struct sockaddr*)&sa, sizeof(sa))) {
 		e = errno;
 		sys_error("connect");
 		goto err;
@@ -373,7 +376,7 @@ err:
 	return -1;
 }
 int
-netopen_tipc (char *path)
+netopen_tipc (char *path, enum r_instruction ri)
 {
 	uint32_t  addr1, addr2, addr3;
 	uint8_t addrtype = TIPC_ADDR_NAME;
@@ -394,7 +397,7 @@ netopen_tipc (char *path)
 		errno = EINVAL;
 		return -1;
 	}
-	return _netopen_tipc(addrtype, addr1, addr2, addr3);
+	return _netopen_tipc(addrtype, addr1, addr2, addr3, ri);
 }
 #endif /* HAVE_TIPC */
 
