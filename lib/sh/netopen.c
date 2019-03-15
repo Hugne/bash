@@ -328,8 +328,8 @@ _netopen_tipc(uint8_t addrtype, uint32_t addr1, uint32_t addr2,
 	int socktype = SOCK_RDM;
 
 	struct sockaddr_tipc sa = {
-			.family = AF_TIPC,
-			.addrtype = addrtype
+		.family = AF_TIPC,
+		.addrtype = addrtype
 	};
 
 	switch (addrtype) {
@@ -337,7 +337,7 @@ _netopen_tipc(uint8_t addrtype, uint32_t addr1, uint32_t addr2,
 			sa.addr.id.node = addr1;
 			sa.addr.id.ref = addr2;
 	break;
-		case TIPC_ADDR_NAME:
+	case TIPC_ADDR_NAME:
 		sa.addrtype = TIPC_ADDR_NAME;
 		sa.addr.name.name.type = addr1;
 		sa.addr.name.name.instance = addr2;
@@ -348,7 +348,7 @@ _netopen_tipc(uint8_t addrtype, uint32_t addr1, uint32_t addr2,
 				do_bind = 0;
 		}
 	break;
-		case TIPC_ADDR_NAMESEQ:
+	case TIPC_ADDR_NAMESEQ:
 		sa.addrtype = TIPC_ADDR_NAMESEQ;
 		sa.addr.nameseq.type = addr1;
 		sa.addr.nameseq.lower = addr2;
