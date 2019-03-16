@@ -325,7 +325,6 @@ _netopen_tipc(uint8_t addrtype, uint32_t addr1, uint32_t addr2,
 	      uint32_t addr3, uint8_t do_bind, uint8_t do_connect)
 {
 	int fd, e;
-	int socktype = SOCK_RDM;
 
 	struct sockaddr_tipc sa = {
 		.family = AF_TIPC,
@@ -341,12 +340,6 @@ _netopen_tipc(uint8_t addrtype, uint32_t addr1, uint32_t addr2,
 		sa.addrtype = TIPC_ADDR_NAME;
 		sa.addr.name.name.type = addr1;
 		sa.addr.name.name.instance = addr2;
-		if ((addr1 == TIPC_TOP_SRV) &&
-			(addr2 == TIPC_TOP_SRV)) {
-				/*Special case to allow for topology server events*/
-				socktype = SOCK_SEQPACKET;
-				do_bind = 0;
-		}
 	break;
 	case TIPC_ADDR_NAMESEQ:
 		sa.addrtype = TIPC_ADDR_NAMESEQ;
@@ -357,7 +350,7 @@ _netopen_tipc(uint8_t addrtype, uint32_t addr1, uint32_t addr2,
 	default:
 		goto err;
 	}
-	if ((fd = socket(AF_TIPC, socktype, 0)) < 0) {
+	if ((fd = socket(AF_TIPC, SOCK_RDM, 0)) < 0) {
 		e = errno;
 		sys_error("socket");
 		goto err;
