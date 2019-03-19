@@ -603,7 +603,7 @@ redir_special_open (spec, filename, flags, mode, ri)
 	return (RESTRICTED_REDIRECT);
 #endif
 #if defined (HAVE_NETWORK)
-      fd = netopen_tipc(filename);
+      fd = netopen_tipc(filename, ri);
 #else
       internal_warning(_("/dev/tipc/type/instance not supported without networking"));
 #endif /* HAVE_NETWORK */
